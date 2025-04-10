@@ -5,9 +5,6 @@ from io import BytesIO
 from flask_cors import CORS
 import logging
 
-
-
-
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend development
 
@@ -15,17 +12,13 @@ logging.basicConfig(level=logging.INFO)
 app.logger.info("Merging PDFs...")
 app.logger.error("Error while merging", exc_info=True)
 
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# UPLOAD_FOLDER = 'uploads'
+# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Add this handler for Vercel
 @app.route('/<path:path>')
 def catch_all(path):
     return render_template('index.html') if path != "favicon.ico" else ("", 404)
-
-# Remove this block:
-# if __name__ == '__main__':
-#     app.run(debug=True)
 
 @app.route('/merge', methods=['POST'])
 def merge_pdfs():
