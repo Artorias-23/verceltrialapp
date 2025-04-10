@@ -15,11 +15,6 @@ app.logger.error("Error while merging", exc_info=True)
 # UPLOAD_FOLDER = 'uploads'
 # os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Add this handler for Vercel
-@app.route('/<path:path>')
-def catch_all(path):
-    return render_template('index.html') if path != "favicon.ico" else ("", 404)
-
 @app.route('/merge', methods=['POST'])
 def merge_pdfs():
     if 'files' not in request.files:
