@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Toolbox</title>
+    <style>
+        .dropzone {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        .hidden { display: none; }
+        #file-list {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>PDF Toolbox</h1>
+    
+    <div id="merge-section">
+        <h2>Merge PDFs</h2>
+        <div id="merge-dropzone" class="dropzone">
+            <input type="file" id="merge-files" multiple accept=".pdf" style="display: none;" />
+            <p>Click to select PDF files (select multiple)</p>
+        </div>
+        <div id="merge-file-list"></div>
+        <button id="merge-btn" class="hidden">Merge PDFs</button>
+    </div>
+
+    <hr>
+
+    <div id="split-section">
+        <h2>Split PDF</h2>
+        <div id="split-dropzone" class="dropzone">
+            <input type="file" id="split-file" accept=".pdf" style="display: none;" />
+            <p>Click to select a PDF file</p>
+        </div>
+        <div id="split-file-info"></div>
+        <button id="split-btn" class="hidden">Split First Page</button>
+    </div>
+
+    <script>
+        // Merge functionality
+        const mergeDropzone = document.getElementById('merge-dropzone');
+        const mergeFilesInput = document.getElementById('merge-files');
+        const mergeFileList = document.getElementById('merge-file-list');
+        const mergeBtn = document.getElementById('merge-btn');
+        let mergeFiles = [];
+
+        mergeDropzone.addEventListener('click', () => mergeFilesInput.click());
+        
+        mergeFilesInput.addEventListener('change', (e) => {
+            mergeFiles = Array.from(e.target.files);
+            if (mergeFiles.length > 0) {
+                mergeFileList.innerHTML = `<h3>Selected files (${mergeFiles.length}):</h3><ul>${
+                    mergeFiles.map(f => `<li>${f.name}</li>`).join('')
+                }</ul>`;
+                mergeBtn.classList.remove('hidden');
+            } else {
+                mergeFileList.innerHTML = '';
+                mergeBtn.classList.add('hidden');
+            }
+        });
+        
+        mergeBtn.addEventListener('click', async () => {
+            if (mergeFiles.length < 2) {
+                alert('Please select at least 2 PDFs to merge');
+                return;
+            }
+
+            const formData = new FormData();
+            mergeFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            try {
+                const response = await fetch('/merge', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Merge failed');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'merged.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        // Split functionality
+        const splitDropzone = document.getElementById('split-dropzone');
+        const splitFileInput = document.getElementById('split-file');
+        const splitFileInfo = document.getElementById('split-file-info');
+        const splitBtn = document.getElementById('split-btn');
+        let splitFile = null;
+
+        splitDropzone.addEventListener('click', () => splitFileInput.click());
+        
+        splitFileInput.addEventListener('change', (e) => {
+            splitFile = e.target.files[0];
+            if (splitFile) {
+                splitFileInfo.innerHTML = `<h3>Selected file:</h3><p>${splitFile.name}</p>`;
+                splitBtn.classList.remove('hidden');
+            } else {
+                splitFileInfo.innerHTML = '';
+                splitBtn.classList.add('hidden');
+            }
+        });
+        
+        splitBtn.addEventListener('click', async () => {
+            if (!splitFile) {
+                alert('Please select a PDF file to split');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', splitFile);
+
+            try {
+                const response = await fetch('/split', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Split failed');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'split_page.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    </script>
+</body>
+</html>
