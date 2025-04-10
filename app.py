@@ -6,12 +6,14 @@ from flask_cors import CORS
 import logging
 
 
-logging.basicConfig(level=logging.INFO)
-app.logger.info("Merging PDFs...")
-app.logger.error("Error while merging", exc_info=True)
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend development
+
+logging.basicConfig(level=logging.INFO)
+app.logger.info("Merging PDFs...")
+app.logger.error("Error while merging", exc_info=True)
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
