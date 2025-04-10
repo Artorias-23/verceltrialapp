@@ -3,6 +3,12 @@ from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 import os
 from io import BytesIO
 from flask_cors import CORS
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+app.logger.info("Merging PDFs...")
+app.logger.error("Error while merging", exc_info=True)
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend development
@@ -71,6 +77,12 @@ def split_pdf():
         as_attachment=True,
         download_name='page_1.pdf'
     )
+
+@app.route('/<path:path>')
+def catch_all(path):
+    if path == "favicon.ico":
+        return "", 404
+    return render_template("index.html")
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
